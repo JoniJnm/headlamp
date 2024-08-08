@@ -1,32 +1,21 @@
 import 'vitest-canvas-mock';
-import { StyledEngineProvider, ThemeProvider } from '@mui/material';
-import type { Meta, StoryFn } from '@storybook/react';
-import { composeStories } from '@storybook/react';
-import { act, render } from '@testing-library/react';
+import { composeStories, type Meta, setProjectAnnotations, type StoryFn } from '@storybook/react';
+import { act, render as testingLibraryRender } from '@testing-library/react';
 import path from 'path';
-import themesConf from './lib/themes';
+import * as previewAnnotations from '../.storybook/preview';
+
+const annotations = setProjectAnnotations([previewAnnotations, { testingLibraryRender }]);
+beforeAll(annotations.beforeAll!);
 
 type StoryFile = {
   default: Meta;
   [name: string]: StoryFn | Meta;
 };
 
-const withThemeProvider = (Story: any) => {
-  const lightTheme = themesConf['light'];
-  const theme = lightTheme;
-
-  return (
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={theme}>
-        <Story />
-      </ThemeProvider>
-    </StyledEngineProvider>
-  );
-};
-
 const compose = (entry: StoryFile) => {
   try {
-    return composeStories(entry);
+    const stories = composeStories(entry);
+    return stories;
   } catch (e) {
     throw new Error(
       `There was an issue composing stories for the module: ${JSON.stringify(entry)}, ${e}`
@@ -51,7 +40,6 @@ function getAllStoryFiles() {
 
 // Recreate similar options to Storyshots. Place your configuration below
 const options = {
-  suite: 'Storybook Tests',
   storyKindRegex: /^.*?DontTest$/,
   snapshotsDirName: '__snapshots__',
   snapshotExtension: '.stories.storyshot',
@@ -62,8 +50,32 @@ vi.mock('@iconify/react', () => ({
   InlineIcon: () => null,
 }));
 
-getAllStoryFiles().forEach(({ storyFile, componentName, storyDir }) => {
-  describe(options.suite, () => {
+vi.mock('@monaco-editor/react', () => ({
+  loader: { config: () => null },
+  default: () => <div className="mock-monaco-editor" />,
+}));
+
+/**
+ * Recursively walks the tree and replaces any usage of useId
+ */
+function replaceUseId(node: any) {
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    for (const attr of node.attributes) {
+      if (attr.value.startsWith(':') && attr.value.endsWith(':')) {
+        // Update the attribute value here
+        node.setAttribute(attr.name, ':mock-test-id:');
+      }
+    }
+  }
+
+  // Recursively update child nodes
+  for (const child of node.childNodes) {
+    replaceUseId(child);
+  }
+}
+
+describe('Storybook Tests', () => {
+  getAllStoryFiles().forEach(({ storyFile, componentName, storyDir }) => {
     const meta = storyFile.default;
     const title = meta.title || componentName;
 
@@ -72,7 +84,7 @@ getAllStoryFiles().forEach(({ storyFile, componentName, storyDir }) => {
       return;
     }
 
-    describe(title, () => {
+    describe(title, async () => {
       const stories = Object.entries(compose(storyFile)).map(([name, story]) => ({
         name,
         story,
@@ -86,23 +98,23 @@ getAllStoryFiles().forEach(({ storyFile, componentName, storyDir }) => {
 
       stories.forEach(({ name, story }) => {
         test(name, async () => {
-          const jsx = withThemeProvider(story);
+          await act(async () => {
+            await story.run();
+          });
 
           await act(async () => {
-            const { unmount, asFragment, rerender } = render(jsx);
-            rerender(jsx);
-            rerender(jsx);
-            await act(() => new Promise(resolve => setTimeout(resolve)));
-
-            const snapshotPath = path.join(
-              storyDir,
-              options.snapshotsDirName,
-              `${componentName}.${name}${options.snapshotExtension}`
-            );
-
-            expect(asFragment()).toMatchFileSnapshot(snapshotPath);
-            unmount();
+            await new Promise(resolve => setTimeout(resolve, 60));
           });
+
+          const snapshotPath = path.join(
+            storyDir,
+            options.snapshotsDirName,
+            `${componentName}.${name}${options.snapshotExtension}`
+          );
+
+          replaceUseId(document);
+
+          expect(document.body).toMatchFileSnapshot(snapshotPath);
         });
       });
     });

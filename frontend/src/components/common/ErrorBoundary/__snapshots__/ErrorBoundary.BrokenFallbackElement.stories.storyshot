@@ -1,3 +1,7 @@
-<DocumentFragment>
-  disabled under test to avoid console spam
-</DocumentFragment>
+<body
+  style=""
+>
+  <div>
+    disabled under test to avoid console spam
+  </div>
+</body>

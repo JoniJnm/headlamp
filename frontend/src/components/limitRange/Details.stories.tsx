@@ -1,11 +1,8 @@
-import { Meta, Story } from '@storybook/react';
-import { LimitRange } from '../../lib/k8s/limitRange';
+import { Meta, StoryFn } from '@storybook/react';
+import { http, HttpResponse } from 'msw';
 import { TestContext } from '../../test';
 import { LimitRangeDetails } from './Details';
 import { LIMIT_RANGE_DUMMY_DATA } from './storyHelper';
-
-LimitRange.useGet = () =>
-  [new LimitRange(LIMIT_RANGE_DUMMY_DATA[0]), null, () => {}, () => {}] as any;
 
 export default {
   title: 'LimitRange/DetailsView',
@@ -14,7 +11,7 @@ export default {
   decorators: [
     Story => {
       return (
-        <TestContext>
+        <TestContext routerMap={{ name: 'my-lr' }}>
           <Story />
         </TestContext>
       );
@@ -22,8 +19,19 @@ export default {
   ],
 } as Meta;
 
-const Template: Story = () => {
+const Template: StoryFn = () => {
   return <LimitRangeDetails />;
 };
 
 export const LimitRangeDetail = Template.bind({});
+LimitRangeDetail.parameters = {
+  msw: {
+    handlers: {
+      story: [
+        http.get('http://localhost:4466/api/v1/limitranges/my-lr', () =>
+          HttpResponse.json(LIMIT_RANGE_DUMMY_DATA[0])
+        ),
+      ],
+    },
+  },
+};

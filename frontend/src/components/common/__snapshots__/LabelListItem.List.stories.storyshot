@@ -1,11 +1,15 @@
-<DocumentFragment>
-  <span
-    aria-label="a label
+<body
+  style=""
+>
+  <div>
+    <span
+      aria-label="a label
 another label
 yet another label"
-    class=""
-    data-mui-internal-clone-element="true"
-  >
-    a label, another label, yet another label
-  </span>
-</DocumentFragment>
+      class=""
+      data-mui-internal-clone-element="true"
+    >
+      a label, another label, yet another label
+    </span>
+  </div>
+</body>

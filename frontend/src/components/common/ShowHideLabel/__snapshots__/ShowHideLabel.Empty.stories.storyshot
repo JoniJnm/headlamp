@@ -1,5 +1,9 @@
-<DocumentFragment>
-  <div
-    class="MuiBox-root css-1v5z18m"
-  />
-</DocumentFragment>
+<body
+  style=""
+>
+  <div>
+    <div
+      class="MuiBox-root css-1v5z18m"
+    />
+  </div>
+</body>

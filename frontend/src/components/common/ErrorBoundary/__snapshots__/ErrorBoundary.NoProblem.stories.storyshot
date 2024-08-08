@@ -1,5 +1,9 @@
-<DocumentFragment>
-  <i>
-    This is not failing.
-  </i>
-</DocumentFragment>
+<body
+  style=""
+>
+  <div>
+    <i>
+      This is not failing.
+    </i>
+  </div>
+</body>
