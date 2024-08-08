@@ -1,3 +1,7 @@
-<DocumentFragment>
-  <div />
-</DocumentFragment>
+<body
+  style=""
+>
+  <div>
+    <div />
+  </div>
+</body>

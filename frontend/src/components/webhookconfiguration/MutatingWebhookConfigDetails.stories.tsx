@@ -1,12 +1,8 @@
-import { Meta, Story } from '@storybook/react';
-import MWC, { KubeMutatingWebhookConfiguration } from '../../lib/k8s/mutatingWebhookConfiguration';
+import { Meta, StoryFn } from '@storybook/react';
+import { http, HttpResponse } from 'msw';
 import { TestContext } from '../../test';
 import MutatingWebhookConfigDetails from './MutatingWebhookConfigDetails';
 import { createMWC } from './storyHelper';
-
-const usePhonyGet: KubeMutatingWebhookConfiguration['useGet'] = (withService: boolean) => {
-  return [new MWC(createMWC(withService)), null, () => {}, () => {}] as any;
-};
 
 export default {
   title: 'WebhookConfiguration/MutatingWebhookConfig/Details',
@@ -19,28 +15,40 @@ export default {
   ],
 } as Meta;
 
-interface MockerStory {
-  withService: boolean;
-}
-
-const Template: Story<MockerStory> = args => {
-  const { withService } = args;
-
-  MWC.useGet = () => usePhonyGet(withService);
-
+const Template: StoryFn = () => {
   return (
-    <TestContext>
+    <TestContext routerMap={{ name: 'my-mwc' }}>
       <MutatingWebhookConfigDetails />;
     </TestContext>
   );
 };
 
 export const WithService = Template.bind({});
-WithService.args = {
-  withService: true,
+
+WithService.parameters = {
+  msw: {
+    handlers: {
+      story: [
+        http.get(
+          'http://localhost:4466/apis/admissionregistration.k8s.io/v1/mutatingwebhookconfigurations/my-mwc',
+          () => HttpResponse.json(createMWC(true))
+        ),
+      ],
+    },
+  },
 };
 
 export const WithURL = Template.bind({});
-WithURL.args = {
-  withService: false,
+
+WithURL.parameters = {
+  msw: {
+    handlers: {
+      story: [
+        http.get(
+          'http://localhost:4466/apis/admissionregistration.k8s.io/v1/mutatingwebhookconfigurations/my-mwc',
+          () => HttpResponse.json(createMWC(false))
+        ),
+      ],
+    },
+  },
 };
