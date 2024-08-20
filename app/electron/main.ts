@@ -492,7 +492,10 @@ function startServer(flags: string[] = []): ChildProcessWithoutNullStreams {
   // server process gets killed. When changing these options, please make sure
   // to test quitting the app in the different platforms and making sure the
   // server process has been correctly quit.
-  const options = { detached: true };
+  const options = {
+    detached: true,
+    shell: true,
+  };
 
   return spawn(serverFilePath, serverArgs, options);
 }
@@ -517,7 +520,7 @@ let serverProcess: ChildProcessWithoutNullStreams | null;
 let intentionalQuit: boolean;
 let serverProcessQuit: boolean;
 
-function quitServerProcess() {
+async function quitServerProcess() {
   if ((!serverProcess || serverProcessQuit) && process.platform !== 'win32') {
     console.error('server process already not running');
     return;
@@ -534,6 +537,22 @@ function quitServerProcess() {
   // @todo: should we try and end the process a bit more gracefully?
   //       What happens if the kill signal doesn't kill it?
   serverProcess.kill();
+
+  if (serverProcess.pid) {
+    killProcess(serverProcess.pid);
+  }
+
+  const runningHeadlamp = await getRunningHeadlampPIDs();
+
+  if (!!runningHeadlamp) {
+    runningHeadlamp.forEach(pid => {
+      try {
+        killProcess(pid);
+      } catch (e) {
+        console.log(`Failed to quit headlamp-server:`, e.message);
+      }
+    });
+  }
 
   serverProcess = null;
 }
@@ -1277,7 +1296,14 @@ function startElecron() {
   });
 }
 
-app.on('quit', quitServerProcess);
+app.on('before-quit', async event => {
+  if (serverProcess === null) {
+    return;
+  }
+  event.preventDefault();
+  await quitServerProcess();
+  app.quit();
+});
 
 /**
  * add some error handlers to the serverProcess.
