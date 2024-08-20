@@ -1,19 +1,23 @@
 import { OpPatch } from 'json-patch';
-import { KubeMetadata, KubeObjectInterface } from '../cluster';
+import { KubeMetadata, KubeObjectInterface } from '../../cluster';
 
 type RecursivePartial<T> = {
-  [P in keyof T]?: RecursivePartial<T[P]>;
+  [P in keyof T]?: T[P] extends (infer U)[]
+    ? RecursivePartial<U>[]
+    : T[P] extends object | undefined
+    ? RecursivePartial<T[P]>
+    : T[P];
 };
 
-export type StreamUpdate<T> = {
+export type StreamUpdate<T = any> = {
   type: 'ADDED' | 'MODIFIED' | 'DELETED' | 'ERROR';
   object: T;
 };
 
 export type CancelFunction = () => void;
 
-export type StreamResultsCb<T> = (data: T[]) => void;
-export type StreamUpdatesCb<T> = (data: StreamUpdate<T>) => void;
+export type StreamResultsCb<T = any> = (data: T) => void;
+export type StreamUpdatesCb<T = any> = (data: T | StreamUpdate<T>) => void;
 
 export type StreamErrCb = (err: Error & { status?: number }, cancelStreamFunc?: () => void) => void;
 

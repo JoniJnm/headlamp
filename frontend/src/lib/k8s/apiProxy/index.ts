@@ -30,10 +30,10 @@ export type {
   RequestParams,
   StreamErrCb,
   StreamResultsCb,
-} from './apiTypes';
+} from '../api/v1/apiTypes';
 
 // Basic cluster API functions
-export { clusterRequest, patch, post, put, remove, request } from './clusterRequests';
+export { clusterRequest, patch, post, put, remove, request } from '../api/v1/clusterRequests';
 
 // Streaming API functions
 export {
@@ -43,18 +43,25 @@ export {
   streamResultsForCluster,
   type StreamArgs,
   type StreamResultsParams,
-} from './streamingApi';
+} from '../api/v1/streamingApi';
 
 // API factory functions
-export { apiFactory, apiFactoryWithNamespace } from './factories';
+export { apiFactory, apiFactoryWithNamespace } from '../api/v1/factories';
 
 // Port forward functions
-export { listPortForward, startPortForward, stopOrDeletePortForward } from './portForward';
+export { listPortForward, startPortForward, stopOrDeletePortForward } from '../api/v1/portForward';
 
-export { deleteCluster, setCluster, testAuth, testClusterHealth } from './clusterApi';
-export { metrics } from './metricsApi';
-export { deletePlugin } from './pluginsApi';
+export {
+  deleteCluster,
+  setCluster,
+  testAuth,
+  testClusterHealth,
+  parseKubeConfig,
+  renameCluster,
+} from '../api/v1/clusterApi';
+export { metrics } from '../api/v1/metricsApi';
+export { deletePlugin } from '../api/v1/pluginsApi';
 
-export { drainNodeStatus, drainNode } from './drainNode';
+export { drainNodeStatus, drainNode } from '../api/v1/drainNode';
 
-export { apply } from './apply';
+export { apply } from '../api/v1/apply';

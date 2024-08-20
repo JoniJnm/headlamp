@@ -17,6 +17,32 @@ export default {
       );
     },
   ],
+  parameters: {
+    msw: {
+      handlers: {
+        base: null,
+        baseStory: [
+          http.get('http://localhost:4466/apis/networking.k8s.io/v1/ingresses', () =>
+            HttpResponse.json({})
+          ),
+          http.get('http://localhost:4466/apis/extensions/v1beta1/ingresses', () =>
+            HttpResponse.error()
+          ),
+          http.get('http://localhost:4466/api/v1/namespaces/default/events', () =>
+            HttpResponse.json({
+              kind: 'EventList',
+              items: [],
+              metadata: {},
+            })
+          ),
+          http.post(
+            'http://localhost:4466/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+            () => HttpResponse.json({ status: { allowed: true, reason: '', code: 200 } })
+          ),
+        ],
+      },
+    },
+  },
 } as Meta;
 
 const Template: StoryFn = () => {

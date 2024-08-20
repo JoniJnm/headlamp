@@ -1,6 +1,4 @@
-<body
-  style=""
->
+<body>
   <div>
     <button
       aria-label="Some label"

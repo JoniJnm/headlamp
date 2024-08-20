@@ -1,9 +1,9 @@
 import { omit } from 'lodash';
-import store from '../../../redux/stores/store';
+import store from '../../../../redux/stores/store';
 import { QueryParameters } from './apiTypes';
 
 export function buildUrl(urlOrParts: string | string[], queryParams?: QueryParameters): string {
-  const url = Array.isArray(urlOrParts) ? urlOrParts.join('/') : urlOrParts;
+  const url = Array.isArray(urlOrParts) ? urlOrParts.filter(Boolean).join('/') : urlOrParts;
   return url + asQuery(queryParams);
 }
 

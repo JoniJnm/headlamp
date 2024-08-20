@@ -1,6 +1,4 @@
-<body
-  style=""
->
+<body>
   <div />
   <div
     aria-busy="false"

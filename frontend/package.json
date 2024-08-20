@@ -23,6 +23,8 @@
     "@mui/x-tree-view": "^6.17.0",
     "@reduxjs/toolkit": "^1.9.3",
     "@storybook/blocks": "^8.2.9",
+    "@tanstack/react-query": "^5.51.24",
+    "@tanstack/react-query-devtools": "^5.51.24",
     "@testing-library/dom": "^10.1.0",
     "@testing-library/react": "^16.0.0",
     "@types/glob": "^8.1.0",
@@ -106,6 +108,11 @@
     "typescript": "5.5.4",
     "vitest": "^2.0.5",
     "cheerio": "1.0.0-rc.12"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "*",
+    "@rollup/rollup-win32-x64-msvc": "*",
+    "@rollup/rollup-darwin-arm64": "*"
   },
   "scripts": {
     "prestart": "npm run make-version",

@@ -144,7 +144,7 @@ export default function Notifications() {
   const notifications = useTypedSelector(state => state.notifications.notifications);
   const dispatch = useDispatch();
   const clusters = useClustersConf();
-  const warnings = Event.useWarningList(
+  const warnings = Event.useWarningListQuery(
     Object.values(clusters ?? {})?.map(c => c.name, {
       queryParams: {
         limit: defaultMaxNotificationsStored,

@@ -1,12 +1,12 @@
-import helpers, { getHeadlampAPIHeaders } from '../../../helpers';
-import { ConfigState } from '../../../redux/configSlice';
-import store from '../../../redux/stores/store';
+import helpers, { getHeadlampAPIHeaders } from '../../../../helpers';
+import { ConfigState } from '../../../../redux/configSlice';
+import store from '../../../../redux/stores/store';
 import {
   deleteClusterKubeconfig,
   findKubeconfigByClusterName,
   storeStatelessClusterKubeconfig,
-} from '../../../stateless';
-import { getCluster } from '../../util';
+} from '../../../../stateless';
+import { getCluster } from '../../../util';
 import { ClusterRequest } from './apiTypes';
 import { clusterRequest, post, request } from './clusterRequests';
 import { JSON_HEADERS } from './constants';
@@ -15,8 +15,8 @@ import { JSON_HEADERS } from './constants';
  * Test authentication for the given cluster.
  * Will throw an error if the user is not authenticated.
  */
-export async function testAuth(cluster = '') {
-  const spec = { namespace: 'default' };
+export async function testAuth(cluster = '', namespace = 'default') {
+  const spec = { namespace };
   const clusterName = cluster || getCluster();
 
   return post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', { spec }, false, {
@@ -122,4 +122,57 @@ export function getClusterDefaultNamespace(cluster: string, checkSettings?: bool
   }
 
   return defaultNamespace;
+}
+
+/**
+ * renameCluster sends call to backend to update a field in kubeconfig which
+ * is the custom name of the cluster used by the user.
+ * @param cluster
+ */
+export async function renameCluster(cluster: string, newClusterName: string, source: string) {
+  let stateless = false;
+  if (cluster) {
+    const kubeconfig = await findKubeconfigByClusterName(cluster);
+    if (kubeconfig !== null) {
+      stateless = true;
+    }
+  }
+
+  return request(
+    `/cluster/${cluster}`,
+    {
+      method: 'PUT',
+      headers: { ...getHeadlampAPIHeaders() },
+      body: JSON.stringify({ newClusterName, source, stateless }),
+    },
+    false,
+    false
+  );
+}
+
+/**
+ * parseKubeConfig sends call to backend to parse kubeconfig and send back
+ * the parsed clusters and contexts.
+ * @param clusterReq - The cluster request object.
+ */
+export async function parseKubeConfig(clusterReq: ClusterRequest) {
+  const kubeconfig = clusterReq.kubeconfig;
+
+  if (kubeconfig) {
+    return request(
+      '/parseKubeConfig',
+      {
+        method: 'POST',
+        body: JSON.stringify(clusterReq),
+        headers: {
+          ...JSON_HEADERS,
+          ...getHeadlampAPIHeaders(),
+        },
+      },
+      false,
+      false
+    );
+  }
+
+  return null;
 }

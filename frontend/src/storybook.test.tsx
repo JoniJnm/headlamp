@@ -1,7 +1,8 @@
 import 'vitest-canvas-mock';
 import { composeStories, type Meta, setProjectAnnotations, type StoryFn } from '@storybook/react';
-import { act, render as testingLibraryRender } from '@testing-library/react';
+import { render as testingLibraryRender, waitFor } from '@testing-library/react';
 import path from 'path';
+import { act } from 'react';
 import * as previewAnnotations from '../.storybook/preview';
 
 const annotations = setProjectAnnotations([previewAnnotations, { testingLibraryRender }]);
@@ -77,6 +78,7 @@ function replaceUseId(node: any) {
 describe('Storybook Tests', () => {
   getAllStoryFiles().forEach(({ storyFile, componentName, storyDir }) => {
     const meta = storyFile.default;
+    // if (!meta.title?.includes('Home/Home')) return;
     const title = meta.title || componentName;
 
     if (options.storyKindRegex.test(title) || meta.parameters?.storyshots?.disable) {
@@ -84,7 +86,7 @@ describe('Storybook Tests', () => {
       return;
     }
 
-    describe(title, async () => {
+    describe(title, () => {
       const stories = Object.entries(compose(storyFile)).map(([name, story]) => ({
         name,
         story,
@@ -98,12 +100,20 @@ describe('Storybook Tests', () => {
 
       stories.forEach(({ name, story }) => {
         test(name, async () => {
+          act(() => {
+            previewAnnotations.queryClient.clear();
+          });
           await act(async () => {
             await story.run();
           });
 
+          await waitFor(() => {
+            if (previewAnnotations.queryClient.isFetching()) {
+              throw new Error('The react-query is still fetching');
+            }
+          });
           await act(async () => {
-            await new Promise(resolve => setTimeout(resolve, 60));
+            await new Promise(resolve => setTimeout(resolve, 10));
           });
 
           const snapshotPath = path.join(
@@ -114,6 +124,7 @@ describe('Storybook Tests', () => {
 
           replaceUseId(document);
 
+          document.body.removeAttribute('style');
           expect(document.body).toMatchFileSnapshot(snapshotPath);
         });
       });

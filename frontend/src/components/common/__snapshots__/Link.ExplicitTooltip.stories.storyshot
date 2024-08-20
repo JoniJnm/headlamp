@@ -1,6 +1,4 @@
-<body
-  style=""
->
+<body>
   <div>
     <span
       aria-label="A tooltip"

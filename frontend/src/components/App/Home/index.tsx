@@ -167,7 +167,7 @@ export default function Home() {
     return null;
   }
 
-  return <HomeComponent clusters={clusters} />;
+  return <HomeComponent clusters={clusters} key={Object.keys(clusters).join('')} />;
 }
 
 interface HomeComponentProps {
@@ -183,7 +183,7 @@ function HomeComponent(props: HomeComponentProps) {
   const { t } = useTranslation(['translation', 'glossary']);
   const [versions, errors] = useClustersVersion(Object.values(clusters));
   const maxWarnings = 50;
-  const warningsMap = Event.useWarningList(Object.values(customNameClusters).map(c => c.name));
+  const warningsMap = Event.useWarningListQuery(Object.values(customNameClusters).map(c => c.name));
 
   function renderWarningsText(clusterName: string) {
     const numWarnings =

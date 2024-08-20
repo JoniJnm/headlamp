@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { CancellablePromise, ResourceClasses } from '.';
 import { ApiError, apiFactoryWithNamespace, QueryParameters } from './apiProxy';
 import { request } from './apiProxy';
@@ -164,6 +164,46 @@ class Event extends makeKubeObject<KubeEvent>('Event') {
     return objInstance;
   }
 
+  static useListQueryForClusters(
+    clusterNames: string[],
+    options: { queryParams?: QueryParameters } = {}
+  ) {
+    // Calling hooks in a loop is usually forbidden
+    // But if we make sure that clusters don't change between renders it's fine
+    // Important! Make sure to have the parent component have clusters as a key
+    // so that component remounts when clusters change, instead of rerendering
+    // with different number of clusters
+    const queries = clusterNames.map(cluster => {
+      return Event.useListQuery({ cluster, queryParams: options.queryParams });
+    });
+
+    type EventErrorObj = {
+      [cluster: string]: {
+        warnings: Event[];
+        error?: ApiError | null;
+      };
+    };
+
+    const result = useMemo(() => {
+      const res: EventErrorObj = {};
+
+      queries.forEach((query, index) => {
+        const cluster = clusterNames[index];
+        res[cluster] = {
+          warnings: query.data?.items ?? [],
+          error: query.error as ApiError,
+        };
+      });
+
+      return res;
+    }, [queries, clusterNames]);
+
+    return result;
+  }
+
+  /**
+   * @deprecated Please use `Event.useListQueryForClusters` instead
+   */
   static useListForClusters(clusterNames: string[], options?: { queryParams?: QueryParameters }) {
     type EventErrorObj = {
       [cluster: string]: {
@@ -235,6 +275,21 @@ class Event extends makeKubeObject<KubeEvent>('Event') {
     return events;
   }
 
+  static useWarningListQuery(clusters: string[], options?: { queryParams?: QueryParameters }) {
+    const queryParameters = Object.assign(
+      {
+        limit: this.maxEventsLimit,
+        fieldSelector: 'type!=Normal',
+      },
+      options?.queryParams ?? {}
+    );
+
+    return this.useListQueryForClusters(clusters, { queryParams: queryParameters });
+  }
+
+  /**
+   * @deprecated Please use `Event.useWarningListQuery` instead
+   */
   static useWarningList(clusters: string[], options?: { queryParams?: QueryParameters }) {
     const queryParameters = Object.assign(
       {

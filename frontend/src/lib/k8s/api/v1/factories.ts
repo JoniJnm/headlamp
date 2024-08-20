@@ -1,9 +1,9 @@
 // @todo: repeatStreamFunc could be improved for performance by remembering when a URL
 //       is 404 and not trying it again... and again.
 
-import { isDebugVerbose } from '../../../helpers';
-import { getCluster } from '../../cluster';
-import { KubeObjectInterface } from '../cluster';
+import { isDebugVerbose } from '../../../../helpers';
+import { getCluster } from '../../../cluster';
+import { KubeObjectInterface } from '../../cluster';
 import {
   ApiClient,
   ApiError,

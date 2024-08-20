@@ -1,6 +1,4 @@
-<body
-  style=""
->
+<body>
   <div>
     <span
       class="MuiCircularProgress-root MuiCircularProgress-indeterminate MuiCircularProgress-colorPrimary css-wdedfu-MuiCircularProgress-root"

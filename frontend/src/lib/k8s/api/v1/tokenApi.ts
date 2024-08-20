@@ -1,8 +1,8 @@
 import { decodeToken } from 'react-jwt';
-import { isDebugVerbose } from '../../../helpers';
-import { setToken } from '../../auth';
-import { getCluster } from '../../cluster';
-import { KubeToken } from '../token';
+import { isDebugVerbose } from '../../../../helpers';
+import { setToken } from '../../../auth';
+import { getCluster } from '../../../cluster';
+import { KubeToken } from '../../token';
 import { combinePath } from './apiUtils';
 import {
   BASE_HTTP_URL,

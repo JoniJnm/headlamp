@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { getCluster } from '../../cluster';
-import { KubeObjectInterface } from '../cluster';
+import { getCluster } from '../../../cluster';
+import { KubeObjectInterface } from '../../cluster';
 import { ApiError } from './apiTypes';
 import { getClusterDefaultNamespace } from './clusterApi';
 import { resourceDefToApiFactory } from './factories';
@@ -58,6 +58,6 @@ export async function apply<T extends KubeObjectInterface>(
     // Preserve the resourceVersion if its an update request
     bodyToApply.metadata.resourceVersion = resourceVersion;
     // We had a conflict. Try a PUT
-    return apiEndpoint.put(bodyToApply, {}, cluster!);
+    return apiEndpoint.put(bodyToApply, {}, cluster!) as Promise<T>;
   }
 }

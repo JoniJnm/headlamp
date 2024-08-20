@@ -1,10 +1,10 @@
 // @todo: Params is a confusing name for options, because params are also query params.
 
-import { isDebugVerbose } from '../../../helpers';
-import { findKubeconfigByClusterName, getUserIdFromLocalStorage } from '../../../stateless';
-import { getToken, logout, setToken } from '../../auth';
-import { getCluster } from '../../cluster';
-import { KubeObjectInterface } from '../cluster';
+import { isDebugVerbose } from '../../../../helpers';
+import { findKubeconfigByClusterName, getUserIdFromLocalStorage } from '../../../../stateless';
+import { getToken, logout, setToken } from '../../../auth';
+import { getCluster } from '../../../cluster';
+import { KubeObjectInterface } from '../../cluster';
 import { ApiError, ClusterRequestParams, QueryParameters, RequestParams } from './apiTypes';
 import { asQuery, combinePath, getClusterAuthType } from './apiUtils';
 import { BASE_HTTP_URL, CLUSTERS_PREFIX, DEFAULT_TIMEOUT, JSON_HEADERS } from './constants';

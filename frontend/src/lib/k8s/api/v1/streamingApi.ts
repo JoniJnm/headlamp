@@ -1,8 +1,8 @@
-import { isDebugVerbose } from '../../../helpers';
-import { findKubeconfigByClusterName, getUserIdFromLocalStorage } from '../../../stateless';
-import { getToken } from '../../auth';
-import { getCluster } from '../../cluster';
-import { KubeObjectInterface } from '../cluster';
+import { isDebugVerbose } from '../../../../helpers';
+import { findKubeconfigByClusterName, getUserIdFromLocalStorage } from '../../../../stateless';
+import { getToken } from '../../../auth';
+import { getCluster } from '../../../cluster';
+import { KubeObjectInterface } from '../../cluster';
 import {
   ApiError,
   CancelFunction,
@@ -10,7 +10,6 @@ import {
   StreamErrCb,
   StreamResultsCb,
   StreamUpdate,
-  StreamUpdatesCb,
 } from './apiTypes';
 import { asQuery, combinePath } from './apiUtils';
 import { clusterRequest } from './clusterRequests';
@@ -106,23 +105,23 @@ export function streamResults<T extends KubeObjectInterface>(
 
 // @todo: this interface needs documenting.
 
-export interface StreamResultsParams<T extends KubeObjectInterface> {
-  cb: StreamResultsCb<T>;
+export interface StreamResultsParams {
+  cb: StreamResultsCb;
   errCb: StreamErrCb;
   cluster?: string;
 }
 
 // @todo: needs documenting
 
-export function streamResultsForCluster<T extends KubeObjectInterface>(
+export function streamResultsForCluster(
   url: string,
-  params: StreamResultsParams<T>,
+  params: StreamResultsParams,
   queryParams?: QueryParameters
 ): Promise<CancelFunction> {
   const { cb, errCb, cluster = '' } = params;
   const clusterName = cluster || getCluster() || '';
 
-  const results: Record<string, T> = {};
+  const results: Record<string, any> = {};
   let isCancelled = false;
   let socket: ReturnType<typeof stream>;
 
@@ -169,7 +168,7 @@ export function streamResultsForCluster<T extends KubeObjectInterface>(
     if (socket) socket.cancel();
   }
 
-  function add(items: T[], kind: string) {
+  function add(items: any[], kind: string) {
     const fixedKind = kind.slice(0, -4); // Trim off the word "List" from the end of the string
     for (const item of items) {
       item.kind = fixedKind;
@@ -179,7 +178,7 @@ export function streamResultsForCluster<T extends KubeObjectInterface>(
     push();
   }
 
-  function update({ type, object }: StreamUpdate<T>) {
+  function update({ type, object }: StreamUpdate) {
     (object as KubeObjectInterface).actionType = type; // eslint-disable-line no-param-reassign
 
     switch (type) {
@@ -272,11 +271,7 @@ export interface StreamArgs {
  * @returns An object with two functions: `cancel`, which can be called to cancel
  * the stream, and `getSocket`, which returns the WebSocket object.
  */
-export function stream<T extends KubeObjectInterface>(
-  url: string,
-  cb: StreamUpdatesCb<T>,
-  args: StreamArgs
-) {
+export function stream<T>(url: string, cb: StreamResultsCb<T>, args: StreamArgs) {
   let connection: { close: () => void; socket: WebSocket | null } | null = null;
   let isCancelled = false;
   const { failCb, cluster = '' } = args;
@@ -347,9 +342,9 @@ export function stream<T extends KubeObjectInterface>(
  *
  * @returns An object with a `close` function and a `socket` property.
  */
-export async function connectStream<T extends KubeObjectInterface>(
+export async function connectStream<T>(
   path: string,
-  cb: StreamUpdatesCb<T>,
+  cb: StreamResultsCb<T>,
   onFail: () => void,
   isJson: boolean,
   additionalProtocols: string[] = [],
@@ -387,9 +382,9 @@ interface StreamParams {
  *
  * @returns A promise that resolves to an object with a `close` function and a `socket` property.
  */
-export async function connectStreamWithParams<T extends KubeObjectInterface>(
+export async function connectStreamWithParams<T>(
   path: string,
-  cb: StreamUpdatesCb<T>,
+  cb: StreamResultsCb<T>,
   onFail: () => void,
   params?: StreamParams
 ): Promise<{
